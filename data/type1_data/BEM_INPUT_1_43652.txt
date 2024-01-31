@@ -1,17 +1,17 @@
-c1                  # master name
-4                   # number of master points
--0.0135 0.2514      # mx1, my1
-0.0135 0.2514       # ...
-0.0135 0.2944       # ...
--0.0135 0.2944      # mxn, myn
+c1                  
+4                   
+-0.0135 0.2514      
+0.0135 0.2514       
+0.0135 0.2944       
+-0.0135 0.2944      
 
-5                   # number of environmental conductor
-botleft             # environmental conductor n name
-4                   # number of environmental conductor n
--0.7475 -0.001      # ex1, ey1
-0 -0.001            # ...
-0 0.001             # ...
--0.7475 0.001       # exn, eyn
+5                   
+botleft             
+4                   
+-0.7475 -0.001      
+0 -0.001            
+0 0.001             
+-0.7475 0.001       
 
 botright
 4
@@ -42,16 +42,16 @@ c2e
 0.3285 0.2944       
 
 
-79                  # number of dielectric
-DIE1                # dielectric n name
-6                   # number of dielectric n
--0.7476 0.001       # ex1, ey1
--0.7475 0.001       # ...
-0 0.001             # ...
-0.9905 0.001        # ...
-0.9905 0.157        # ...
--0.7476 0.157       # exn, eyn
-3                   # er
+79                  
+DIE1                
+6                   
+-0.7476 0.001       
+-0.7475 0.001       
+0 0.001             
+0.9905 0.001        
+0.9905 0.157        
+-0.7476 0.157       
+3                   
 
 DIE2
 4
@@ -734,9 +734,9 @@ air_Layer
 1
 
 
-4                       # number of boundary Polygon points
--0.7476 0.001           # ex1, ey1
-0.9905 0.001            # ...
-0.9905 10.564           # ...
--0.7476 10.564          # ...
+4                       
+-0.7476 0.001           
+0.9905 0.001            
+0.9905 10.564           
+-0.7476 10.564          
 

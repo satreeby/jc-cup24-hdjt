@@ -267,8 +267,8 @@ def read_txt_file(file_path):
 
 
 # 调用函数，传入文件路径
-# file_path = './type2_data/BEM_INPUT_1_43817.txt'
-file_path = 'C:\\project\\python\\huadajiutian\\BEM_INPUT_2_43652.txt'
+file_path = './data/type2_data/BEM_INPUT_1_43817.txt'
+# file_path = 'C:\\project\\python\\huadajiutian\\BEM_INPUT_2_43652.txt'
 master, env_list, dielectric_list, boundpoly = read_txt_file(file_path)
 
 # 可以根据需要进一步处理 result
