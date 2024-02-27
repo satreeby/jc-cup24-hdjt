@@ -93,6 +93,9 @@ class Env:
         ax.plot(X, Y, linewidth=1)
         ax.text(midX, midY, self.name)
 
+    def pointxy(self):
+        return self.points[0][0], self.points[0][1]
+
 
 class Dielectric:
     def __init__(self, name, num, points, er):
@@ -267,13 +270,16 @@ def read_txt_file(file_path):
 
 
 # 调用函数，传入文件路径
-file_path = './data/type2_data/BEM_INPUT_1_43817.txt'
+file_path1 = './data/type1_data/BEM_INPUT_1_43652.txt'
 # file_path = 'C:\\project\\python\\huadajiutian\\BEM_INPUT_2_43652.txt'
-master, env_list, dielectric_list, boundpoly = read_txt_file(file_path)
+master, env_list, dielectric_list, boundpoly = read_txt_file(file_path1)
+x, y = env_list[1].pointxy()
+print(x)
+print(y)
 
 # 可以根据需要进一步处理 result
-tensor=boundpoly.Tensorize()
-print(tensor)
+# tensor=boundpoly.Tensorize()
+# print(tensor)
 
 # 张量矩阵
 
