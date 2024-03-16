@@ -1,14 +1,6 @@
 # -*- coding: gbk -*-
 
 '''
-食用方法：调用parser()函数
-读取同一type所有文件：parser(type=1 or 2 or 3, Fpath= 【type_data文件夹路径，格式为字符串】)
-读取某一个文件：parser(type=0, Fpath=【文件路径，格式为字符串】)
-输出文件output分为两部分，第一部分每一行信息都带序号，表示对于同一type所有文件，这些值都相同
-                      第二部分的内容没有序号，在每一个input中都不同，针对每一个input输出一行值
-'''
-
-'''
 假设：
 1. master都是梯形(矩形也用梯形处理)，且梯形上下底都是平的
 2. 环境导体是矩形或者梯形，没有其它可能
@@ -21,7 +13,9 @@
 6. 每一层的厚度相同
 7. bottom层一定是矩形，用逆时针的四个点描述
 8. 计算dielectric number的时候包括了air_layer
+9. 统一个pattern如有dielectric重复，其重复次数在不同采样点中必一样
 '''
+
 
 
 class Master:
@@ -131,73 +125,22 @@ class Info_One_input:
         '''定义需要返回的信息'''
         self.master = None          # master
         self.env_list = None        # env列表
-        self.master_seq = 0         # master在导体层的位置
         self.master_width = 0       # master宽度
-        self.master_thickness = 0   # master厚度
-        self.env_num = 0            # 环境导体个数
-        self.env_seq = {}           # 环境导体位置字典
-        self.env_width = {}         # 导体宽度字典
-        self.env_thickness = {}     # 导体厚度字典
-        self.cond_sep = []          # 导体间距列表
-        self.bot_l_space = 0        # layer左侧多出来的距离
-        self.bot_r_space = 0        # layer右侧多出来的距离
-        self.bot_divider = 0        # layer左右分隔处横坐标
-        self.layer_thickness = 0    # layer厚度
-        self.cond_to_cond = 0       # 导体层间高度差
-        self.cond_to_layer = 0      # 导体底部到layer顶部的距离
         self.boundary_width = 0     # 边界宽
-        self.boundary_height = 0    # 边界高
-        self.d_width = {}           # 介质宽度字典
-        self.d_thickness = {}       # 介质厚度字典
-        self.d_Er = {}              # 介质相对介电常数字典
 
 
 class Info_All:
     def __init__(self):
         self.masterL = []       # master列表
         self.env_listL = []     # env_list列表
-        self.master_seqL = []  # master在导体层的位置
         self.master_widthL = []  # master宽度
-        self.master_thicknessL = []  # master厚度
-        self.env_numL = []  # 环境导体个数
-        self.env_seqL = []  # 环境导体位置字典
-        self.env_widthL = []  # 导体宽度字典
-        self.env_thicknessL = []  # 导体厚度字典
-        self.cond_sepL = []  # 导体间距字典
-        self.bot_l_spaceL = []  # layer左侧多出来的距离
-        self.bot_r_spaceL = []  # layer右侧多出来的距离
-        self.bot_dividerL = []  # layer左右分隔处横坐标
-        self.layer_thicknessL = []  # layer厚度
-        self.cond_to_condL = [] # 导体层间距离
-        self.cond_to_layerL = []  # 导体底部到layer顶部的距离
         self.boundary_widthL = []  # 边界宽
-        self.boundary_heightL = []  # 边界高
-        self.d_widthL = []  # 介质宽度字典
-        self.d_thicknessL = []  # 介质厚度字典
-        self.d_ErL = []  # 介质相对介电常数字典
 
     def collect(self, info):
         self.masterL.append(info.master)
         self.env_listL.append(info.env_list)
-        self.master_seqL.append(info.master_seq)
         self.master_widthL.append(info.master_width)
-        self.master_thicknessL.append(info.master_thickness)
-        self.env_numL.append(info.env_num)
-        self.env_seqL.append(info.env_seq)
-        self.env_widthL.append(info.env_width)
-        self.env_thicknessL.append(info.env_thickness)
-        self.cond_sepL.append(info.cond_sep)
-        self.bot_l_spaceL.append(info.bot_l_space)
-        self.bot_r_spaceL.append(info.bot_r_space)
-        self.bot_dividerL.append(info.bot_divider)
-        self.layer_thicknessL.append(info.layer_thickness)
-        self.cond_to_condL.append(info.cond_to_cond)
-        self.cond_to_layerL.append(info.cond_to_layer)
         self.boundary_widthL.append(info.boundary_width)
-        self.boundary_heightL.append(info.boundary_height)
-        self.d_widthL.append(info.d_width)
-        self.d_thicknessL.append(info.d_thickness)
-        self.d_ErL.append(info.d_Er)
 
 
 def read_txt_file(file_path):
@@ -284,131 +227,32 @@ def process_data(master, env_list, bot_list, dielectric_list, boundpoly):
 
     # 利用导体左下角点纵坐标判断type
     TYPE = 1# 默认是type1
-    cond_layer_sep = 0# 如果是两层，顺便计算导体层之间的距离
-    cond_to_bottom = master.points[0][1]-bot_list[0].points[3][1]# 计算导体层到bottom的距离(如果master在下面)
     y_threshold = min([e.height for e in env_list])
     y_threshold = min(y_threshold, master.height)
     for e in env_list:
         if master.points[0][1]-e.points[0][1] > y_threshold:# master在上面
             TYPE=2
-            cond_layer_sep = master.points[0][1]-e.topLeft[1]
-            cond_to_bottom = e.points[0][1]-bot_list[0].points[3][1]
             break
         else:
             if e.points[0][1]-master.points[0][1]>y_threshold:# master在下面
                 TYPE=3
-                cond_layer_sep = e.points[0][1]-master.topLeft[1]
                 break
-
-
-    # 导体层排布顺序
-    con_layer_seq = {}
-    con_layer_seq[master.name] = (master.botLeft[0]+master.topLeft[0])/2
-    for env_i in env_list:
-        con_layer_seq[env_i.name] = (env_i.botLeft[0]+env_i.topLeft[0])/2
-    sorted_item = [(key, value) for (key, value) in con_layer_seq.items()]
-    sorted_item.sort(key=lambda x: x[1])  # ???
-    for i in range(len(sorted_item)):
-        if sorted_item[i][0] == master.name:
-            master.seq_x = i + 1
-        else:
-            for e in env_list:
-                if sorted_item[i][0] == e.name:
-                    e.seq_x = i + 1
-
-    # 计算separation
-    sep_distance = []
-    sep_x = {}
-    sep_x[str(master.seq_x) + 'lt'] = master.topLeft[0]
-    sep_x[str(master.seq_x) + 'lb'] = master.botLeft[0]
-    sep_x[str(master.seq_x) + 'rt'] = master.topRight[0]
-    sep_x[str(master.seq_x) + 'rb'] = master.botRight[0]
-    for e in env_list:
-        sep_x[str(e.seq_x) + 'lt'] = e.topLeft[0]
-        sep_x[str(e.seq_x) + 'lb'] = e.botLeft[0]
-        sep_x[str(e.seq_x) + 'rt'] = e.topRight[0]
-        sep_x[str(e.seq_x) + 'rb'] = e.botRight[0]
-    sep_distance.append((sep_x[str(1) + 'lt']+sep_x[str(1)+'lb'])/2 - boundpoly.points[0][0])  # 到左边界的距离
-    for i in range(2, 2 + len(env_list)):
-        sep_distance.append((sep_x[str(i) + 'lt'] - sep_x[str(i - 1) + 'rt']+sep_x[str(i)+'lb']-sep_x[str(i-1)+'rb'])/2)
-    sep_distance.append(boundpoly.points[1][0] - (sep_x[str(1 + len(env_list)) + 'rt']+sep_x[str(1 + len(env_list)) + 'rb'])/2)
-
-    # layer左右多出来的宽度
-    cond_lx = 0  # 导体层最左边的点的横坐标
-    cond_rx = 0  # 导体层最右边的点的横坐标
-    if master.seq_x == 1:
-        cond_lx = (master.botLeft[0] + master.topLeft[0]) / 2
-    else:
-        if master.seq_x == 1 + len(env_list):
-            cond_rx = (master.botRight[0] + master.topRight[0]) / 2
-    for e in env_list:
-        if e.seq_x == 1:
-            cond_lx = (e.botLeft[0] + e.topLeft[0]) / 2
-        else:
-            if e.seq_x == 1 + len(env_list):
-                cond_rx = (e.botRight[0] + e.topRight[0]) / 2
 
     '''对结果保留到小数点后三位'''
     # 返回结果
     info.master = master
     info.env_list = env_list
-    info.master_seq = master.seq_x
     info.master_width = round(master.width, 3)
-    info.master_thickness = round(master.height, 3)
-    info.env_num = len(env_list)
-    for e in env_list:
-        info.env_seq[e.name] = e.seq_x
-        info.env_width[e.name] = round(e.width, 3)
-        info.env_thickness[e.name] = round(e.height, 3)
-    for s in range(len(sep_distance)):
-        sep_distance[s] = round(sep_distance[s], 3)
-    info.cond_sep = sep_distance
-    info.bot_l_space = round(cond_lx - bot_list[0].points[0][0], 3)
-    info.bot_r_space = round(bot_list[1].points[1][0] - cond_rx, 3)
-    info.bot_divider = bot_list[0].points[1][0]
-    info.layer_thickness = round(bot_list[0].height, 3)
-    info.cond_to_cond = round(cond_layer_sep, 3)
-    info.cond_to_layer = round(cond_to_bottom, 3)
     info.boundary_width = round(boundpoly.width, 3)
-    info.boundary_height = round(boundpoly.height, 3)
-    for d in dielectric_list:
-        info.d_width[d.name] = []
-        info.d_thickness[d.name] = []
-    for d in dielectric_list:
-        info.d_Er[d.name] = d.er
-        if round(d.width, 3) not in info.d_width[d.name]:
-            info.d_width[d.name].append(round(d.width, 3))
-        if round(d.height, 3) not in info.d_thickness[d.name]:
-            info.d_thickness[d.name].append(round(d.height, 3))
     return info, TYPE
 
 
 def output_info(INFO_ALL, input_num, TYPE):
     # 打开文件以便写入
     with open('output.txt', 'w') as f:
-        print('Type'+str(TYPE)+':', file=f)
+        print('type'+str(TYPE), file=f)
         if TYPE == 1:
-            print("1. master thickness: "+str(INFO_ALL.master_thicknessL[0]), file=f)# 厚度相同
-            print("2. env number: "+str(INFO_ALL.env_numL[0]), file=f)
-            print("3. env thickness: ", file=f)
-            for key, value in INFO_ALL.env_thicknessL[0].items():
-                print('    '+key + ': ' + str(value), file=f)
-            print("4. conductor L space: "+str(INFO_ALL.cond_sepL[0][0]), file=f)
-            print("5. conductor R space: "+str(INFO_ALL.cond_sepL[0][-1]), file=f)
-            print("6. bottom divider x： "+str(INFO_ALL.bot_dividerL[0]), file=f)
-            print("7. bottom L space: "+str(INFO_ALL.bot_l_spaceL[0]), file=f)
-            print("8. bottom R space: "+str(INFO_ALL.bot_r_spaceL[0]), file=f)
-            print("9. layer thickness: "+str(INFO_ALL.layer_thicknessL[0]), file=f)
-            print("10. distance from conductor to layer: "+str(INFO_ALL.cond_to_layerL[0]), file=f)
-            print("11. dielectric number: "+str(len(INFO_ALL.d_ErL[0])), file=f)
-            print("12. dielectric thickness & Er: ", file=f)
-            for key in INFO_ALL.d_ErL[0].keys():
-                if key != 'air_Layer':
-                    print('    '+key+': '+str(INFO_ALL.d_thicknessL[0][key])+' & '+str(INFO_ALL.d_ErL[0][key]), file=f)
-            print("13. air layer Er: "+str(INFO_ALL.d_ErL[0]['air_Layer']), file=f)
-            print("14. minW: "+str(INFO_ALL.env_widthL[0]['c2e']), file=f)
-            print(" ", file=f)
-            print('w1\t\trightspace\tleftspace\tedgespace\tWb\t\tHb\t\tt_air', file=f)
+            print('w1\t\trightspace\tleftspace\tedgespace\tWb', file=f)
             for i in range(input_num):
                 rightspace = 0
                 leftspace = 0
@@ -425,44 +269,15 @@ def output_info(INFO_ALL, input_num, TYPE):
                             e.botRight[0]) / 2, 3)
                     if e.name == 'c2e':
                         edgespace = round(abs(e.topLeft[0] - e_c2.topRight[0] + e.botLeft[0] - e_c2.botRight[0]) / 2, 3)
-                print('{:.3f}\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t{:.3f}\t{:.3f}'.format(INFO_ALL.master_widthL[i],
+                print('{:.3f}\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(INFO_ALL.master_widthL[i],
                                                                                       rightspace,
                                                                                       leftspace,
                                                                                       edgespace,
-                                                                                      INFO_ALL.boundary_widthL[i],
-                                                                                      INFO_ALL.boundary_heightL[i],
-                                                                                      INFO_ALL.d_thicknessL[i]['air_Layer'][0]), file=f)
-            print(" ", file=f)
-            #打印电介质宽度
-            print("dielectric width: ", file=f)
-            for i in range(input_num):
-                print('input'+str(i+1)+': ', end='', file=f)
-                print(INFO_ALL.d_widthL[i], file=f)
+                                                                                      INFO_ALL.boundary_widthL[i]), file=f)
+
 
         if TYPE == 2:
-            print("1. master thickness: " + str(INFO_ALL.master_thicknessL[0]), file=f)  # 厚度相同
-            print("2. env number: " + str(INFO_ALL.env_numL[0]), file=f)
-            print("3. env thickness: ", file=f)
-            for key, value in INFO_ALL.env_thicknessL[0].items():
-                print('    ' + key + ': ' + str(value), file=f)
-            print("4. conductor L space: " + str(INFO_ALL.cond_sepL[0][0]), file=f)
-            print("5. conductor R space: " + str(INFO_ALL.cond_sepL[0][-1]), file=f)
-            print("6. bottom divider x： " + str(INFO_ALL.bot_dividerL[0]), file=f)
-            print("7. bottom L space: " + str(INFO_ALL.bot_l_spaceL[0]), file=f)
-            print("8. bottom R space: " + str(INFO_ALL.bot_r_spaceL[0]), file=f)
-            print("9. layer thickness: " + str(INFO_ALL.layer_thicknessL[0]), file=f)
-            print("10. distance from conductor to conductor: " + str(INFO_ALL.cond_to_condL[0]), file=f)
-            print("11. distance from conductor to layer: " + str(INFO_ALL.cond_to_layerL[0]), file=f)
-            print("12. dielectric number: " + str(len(INFO_ALL.d_ErL[0])), file=f)
-            print("13. dielectric thickness & Er: ", file=f)
-            for key in INFO_ALL.d_ErL[0].keys():
-                if key != 'air_Layer':
-                    print('    ' + key + ': ' + str(INFO_ALL.d_thicknessL[0][key]) + ' & ' + str(INFO_ALL.d_ErL[0][key]),
-                        file=f)
-            print("14. air layer Er: " + str(INFO_ALL.d_ErL[0]['air_Layer']), file=f)
-            print("15. minW: " + str(INFO_ALL.env_widthL[0]['c2Env']), file=f)
-            print(" ", file=f)
-            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb\t\tHb\t\tt_air', file=f)
+            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb', file=f)
             for i in range(input_num):
                 space = 0
                 digSpace = 0
@@ -474,40 +289,15 @@ def output_info(INFO_ALL, input_num, TYPE):
                         digSpace = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
                     if e.name == 'c1Env':
                         edgespace = round(abs(INFO_ALL.masterL[i].topLeft[0]-e.topRight[0]+INFO_ALL.masterL[i].botLeft[0]-e.botRight[0])/2, 3)
-                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t{:.3f}\t{:.3f}'.format(INFO_ALL.master_widthL[i],
+                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(INFO_ALL.master_widthL[i],
                                                                                       space,
                                                                                       digSpace,
                                                                                       edgespace,
-                                                                                      INFO_ALL.boundary_widthL[i],
-                                                                                      INFO_ALL.boundary_heightL[i],
-                                                                                      INFO_ALL.d_thicknessL[i]['air_Layer'][0]), file=f)
-            print(" ", file=f)
-            # 打印电介质宽度
-            print("dielectric width: ", file=f)
-            for i in range(input_num):
-                print('input' + str(i + 1) + ': ', end='', file=f)
-                print(INFO_ALL.d_widthL[i], file=f)
+                                                                                      INFO_ALL.boundary_widthL[i]), file=f)
 
         if TYPE == 3:
-            print("1. master thickness: " + str(INFO_ALL.master_thicknessL[0]), file=f)  # 厚度相同
-            print("2. bottom divider x： " + str(INFO_ALL.bot_dividerL[0]), file=f)
-            print("3. layer thickness: " + str(INFO_ALL.layer_thicknessL[0]), file=f)
-            print("4. distance from conductor to conductor: " + str(INFO_ALL.cond_to_condL[0]), file=f)
-            print("5. distance from conductor to layer: " + str(INFO_ALL.cond_to_layerL[0]), file=f)
-            print("6. dielectric number: " + str(len(INFO_ALL.d_ErL[0])), file=f)
-            print("7. dielectric thickness & Er: ", file=f)
-            for key in INFO_ALL.d_ErL[0].keys():
-                if key != 'air_Layer':
-                    print('    ' + key + ': ' + str(INFO_ALL.d_thicknessL[0][key]) + ' & ' + str(INFO_ALL.d_ErL[0][key]),
-                        file=f)
-            print("8. air layer Er: " + str(INFO_ALL.d_ErL[0]['air_Layer']), file=f)
-            print("9. minW: " + str(INFO_ALL.env_widthL[0]['c2Env']), file=f)
-            print(" ", file=f)
-            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb\t\tHb\t\tenv_num\tt_d2Env\tcLspace\tcRspace\tbLspace\tbRspace\tt_air', file=f)
+            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb', file=f)
             for i in range(input_num):
-                t_d2Env = 0# 如果没有这个导体就0
-                if INFO_ALL.env_numL[i]==6:
-                    t_d2Env = INFO_ALL.env_thicknessL[i]['d2Env']
                 space = 0
                 digSpace = 0
                 edgespace = 0
@@ -518,27 +308,12 @@ def output_info(INFO_ALL, input_num, TYPE):
                         digSpace = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
                     if e.name == 'c1Env':
                         edgespace = round(abs(INFO_ALL.masterL[i].topLeft[0]-e.topRight[0]+INFO_ALL.masterL[i].botLeft[0]-e.botRight[0])/2, 3)
-                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t{:.3f}\t{:}\t\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}'.format(
+                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(
                     INFO_ALL.master_widthL[i],
                     space,
                     digSpace,
                     edgespace,
-                    INFO_ALL.boundary_widthL[i],
-                    INFO_ALL.boundary_heightL[i],
-                    INFO_ALL.env_numL[i],
-                    t_d2Env,
-                    INFO_ALL.cond_sepL[i][0],
-                    INFO_ALL.cond_sepL[i][-1],
-                    INFO_ALL.bot_l_spaceL[i],
-                    INFO_ALL.bot_r_spaceL[i],
-                    INFO_ALL.d_thicknessL[i]['air_Layer'][0]),
-                    file=f)
-            print(" ", file=f)
-            # 打印电介质宽度
-            print("dielectric width: ", file=f)
-            for i in range(input_num):
-                print('input' + str(i + 1) + ': ', end='', file=f)
-                print(INFO_ALL.d_widthL[i], file=f)
+                    INFO_ALL.boundary_widthL[i],),file=f)
 
 
 def parser(type=0, Fpath=''):
@@ -578,10 +353,16 @@ def parser(type=0, Fpath=''):
             output_info(INFO_ALL, input_num, 3)
 
 
+'''
+食用方法：调用parser()函数
+读取同一type所有文件：parser(type=1 or 2 or 3, Fpath= 【type_data文件夹路径，格式为字符串】)
+读取某一个文件：parser(type=0, Fpath=【文件路径，格式为字符串】)
+输出文件为output
+'''
 # 调用
 if __name__=="__main__":
     # 读入同一type所有文件
-    parser(type=3, Fpath='../data')
+    parser(type=1, Fpath='./data')
     # 读入一个文件
     # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
     # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
