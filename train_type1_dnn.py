@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch.utils import data
 from model.type1 import CpMLP
-import parser_1
+from parser_work import parser_5_features
 
 # 评价标准
 def weighted_average_loss(outputs, labels):
@@ -37,12 +37,12 @@ def load_data(labels_path, start, end):
     labels=torch.tensor(dataset_labels[start: end], dtype=torch.float32)
     return labels
 
-labels_train = load_data('C:\project\python\HuadaJiutian\labels_type1.txt', 0, 50)
-labels_test = load_data('C:\project\python\HuadaJiutian\labels_type1.txt', 50, 64)
+labels_train = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt', 0, 50)
+labels_test = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt', 50, 64)
 
 # 获取输入数据
 
-inputs=torch.tensor(parser_1.parser(type=1, Fpath='./data'),dtype=torch.float32)
+inputs=torch.tensor(parser_5_features.parser(type=1, Fpath='./data'),dtype=torch.float32)
 inputs_train=inputs[0:50, :]
 inputs_test=inputs[50:, :]
 
@@ -65,7 +65,7 @@ def test_model(model, features_test, labels_test):
 
 # 初始化模型、损失函数和优化器
 batch_size=50
-model = CpMLP.CpMLP(inchans=6, hidden1=1024, hidden2=512, hidden3=256, outchans=5)
+model = CpMLP.CpMLP(inchans=5, hidden1=1024, hidden2=512, hidden3=256, outchans=5)
 for param in model.parameters():
     torch.nn.init.normal_(param, mean=0, std=0.01)
 criterion = torch.nn.MSELoss()

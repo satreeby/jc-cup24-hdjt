@@ -1,10 +1,5 @@
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
-import parser_1
+import parser_work.parser_1 as parser_1
 import numpy as np
-import xgboost as xgb
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.multioutput import MultiOutputRegressor
 
@@ -35,8 +30,8 @@ def load_data(labels_path, start, end):
     labels=dataset_labels[start: end]
     return labels
 
-labels_train = load_data('C:\project\python\HuadaJiutian\labels_type1.txt', 0, 50)
-labels_test = load_data('C:\project\python\HuadaJiutian\labels_type1.txt', 50, 64)
+labels_train = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt', 0, 50)
+labels_test = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt', 50, 64)
 
 
 # 获取输入数据

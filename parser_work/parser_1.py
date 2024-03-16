@@ -1,6 +1,11 @@
 # -*- coding: gbk -*-
 
 '''
+output: [B, C], C=5, [w1, leftspace, rightspace, edgespace, Wb]
+'''
+
+
+'''
 食用方法：调用parser()函数
 读取同一type所有文件：parser(type=1 or 2 or 3, Fpath= 【type_data文件夹路径，格式为字符串】)
 读取某一个文件：parser(type=0, Fpath=【文件路径，格式为字符串】)
