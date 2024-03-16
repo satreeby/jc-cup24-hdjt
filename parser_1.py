@@ -1,6 +1,14 @@
 # -*- coding: gbk -*-
 
 '''
+食用方法：调用parser()函数
+读取同一type所有文件：parser(type=1 or 2 or 3, Fpath= 【type_data文件夹路径，格式为字符串】)
+读取某一个文件：parser(type=0, Fpath=【文件路径，格式为字符串】)
+输出文件output分为两部分，第一部分每一行信息都带序号，表示对于同一type所有文件，这些值都相同
+                      第二部分的内容没有序号，在每一个input中都不同，针对每一个input输出一行值
+'''
+
+'''
 假设：
 1. master都是梯形(矩形也用梯形处理)，且梯形上下底都是平的
 2. 环境导体是矩形或者梯形，没有其它可能
@@ -14,6 +22,13 @@
 7. bottom层一定是矩形，用逆时针的四个点描述
 8. 计算dielectric number的时候包括了air_layer
 9. 统一个pattern如有dielectric重复，其重复次数在不同采样点中必一样
+'''
+
+
+'''
+问题：
+1. 速度优化
+2. 打印电介质信息的时候，同一个电介质在一个input里面可能出现好几次，但是没有打印出来
 '''
 
 
@@ -125,22 +140,76 @@ class Info_One_input:
         '''定义需要返回的信息'''
         self.master = None          # master
         self.env_list = None        # env列表
+        self.master_seq = 0         # master在导体层的位置
         self.master_width = 0       # master宽度
+        self.master_thickness = 0   # master厚度
+        self.env_num = 0            # 环境导体个数
+        self.env_seq = {}           # 环境导体位置字典
+        self.env_width = {}         # 导体宽度字典
+        self.env_thickness = {}     # 导体厚度字典
+        self.cond_sep = []          # 导体间距列表
+        self.bot_l_space = 0        # layer左侧多出来的距离
+        self.bot_r_space = 0        # layer右侧多出来的距离
+        self.bot_divider = 0        # layer左右分隔处横坐标
+        self.layer_thickness = 0    # layer厚度
+        self.cond_to_cond = 0       # 导体层间高度差
+        self.cond_to_layer = 0      # 导体底部到layer顶部的距离
         self.boundary_width = 0     # 边界宽
+        self.boundary_height = 0    # 边界高
+        # self.d_width = {}           # 介质宽度字典
+        # self.d_thickness = {}       # 介质厚度字典
+        # self.d_Er = {}              # 介质相对介电常数字典
+        self.die_info = {}          # 介质信息
+        self.boundary_leftx = 0      # 左边界x
+        self.boundary_rightx = 0     # 右边界x
 
 
 class Info_All:
     def __init__(self):
         self.masterL = []       # master列表
         self.env_listL = []     # env_list列表
+        self.master_seqL = []  # master在导体层的位置
         self.master_widthL = []  # master宽度
+        self.master_thicknessL = []  # master厚度
+        self.env_numL = []  # 环境导体个数
+        self.env_seqL = []  # 环境导体位置字典
+        self.env_widthL = []  # 导体宽度字典
+        self.env_thicknessL = []  # 导体厚度字典
+        self.cond_sepL = []  # 导体间距字典
+        self.bot_l_spaceL = []  # layer左侧多出来的距离
+        self.bot_r_spaceL = []  # layer右侧多出来的距离
+        self.bot_dividerL = []  # layer左右分隔处横坐标
+        self.layer_thicknessL = []  # layer厚度
+        self.cond_to_condL = [] # 导体层间距离
+        self.cond_to_layerL = []  # 导体底部到layer顶部的距离
         self.boundary_widthL = []  # 边界宽
+        self.boundary_heightL = []  # 边界高
+        self.die_infoL = []     # 介质信息
+        self.boundary_leftxL = []
+        self.boundary_rightxL = []
 
     def collect(self, info):
         self.masterL.append(info.master)
         self.env_listL.append(info.env_list)
+        self.master_seqL.append(info.master_seq)
         self.master_widthL.append(info.master_width)
+        self.master_thicknessL.append(info.master_thickness)
+        self.env_numL.append(info.env_num)
+        self.env_seqL.append(info.env_seq)
+        self.env_widthL.append(info.env_width)
+        self.env_thicknessL.append(info.env_thickness)
+        self.cond_sepL.append(info.cond_sep)
+        self.bot_l_spaceL.append(info.bot_l_space)
+        self.bot_r_spaceL.append(info.bot_r_space)
+        self.bot_dividerL.append(info.bot_divider)
+        self.layer_thicknessL.append(info.layer_thickness)
+        self.cond_to_condL.append(info.cond_to_cond)
+        self.cond_to_layerL.append(info.cond_to_layer)
         self.boundary_widthL.append(info.boundary_width)
+        self.boundary_heightL.append(info.boundary_height)
+        self.die_infoL.append(info.die_info)
+        self.boundary_leftxL.append(info.boundary_leftx)
+        self.boundary_rightxL.append(info.boundary_rightx)
 
 
 def read_txt_file(file_path):
@@ -227,93 +296,159 @@ def process_data(master, env_list, bot_list, dielectric_list, boundpoly):
 
     # 利用导体左下角点纵坐标判断type
     TYPE = 1# 默认是type1
+    cond_layer_sep = 0# 如果是两层，顺便计算导体层之间的距离
+    cond_to_bottom = master.points[0][1]-bot_list[0].points[3][1]# 计算导体层到bottom的距离(如果master在下面)
     y_threshold = min([e.height for e in env_list])
     y_threshold = min(y_threshold, master.height)
     for e in env_list:
         if master.points[0][1]-e.points[0][1] > y_threshold:# master在上面
             TYPE=2
+            cond_layer_sep = master.points[0][1]-e.topLeft[1]
+            cond_to_bottom = e.points[0][1]-bot_list[0].points[3][1]
             break
         else:
             if e.points[0][1]-master.points[0][1]>y_threshold:# master在下面
                 TYPE=3
+                cond_layer_sep = e.points[0][1]-master.topLeft[1]
                 break
+
+
+    # 导体层排布顺序
+    con_layer_seq = {}
+    con_layer_seq[master.name] = (master.botLeft[0]+master.topLeft[0])/2
+    for env_i in env_list:
+        con_layer_seq[env_i.name] = (env_i.botLeft[0]+env_i.topLeft[0])/2
+    sorted_item = [(key, value) for (key, value) in con_layer_seq.items()]
+    sorted_item.sort(key=lambda x: x[1])  # ???
+    for i in range(len(sorted_item)):
+        if sorted_item[i][0] == master.name:
+            master.seq_x = i + 1
+        else:
+            for e in env_list:
+                if sorted_item[i][0] == e.name:
+                    e.seq_x = i + 1
+
+    # 计算separation
+    sep_distance = []
+    sep_x = {}
+    sep_x[str(master.seq_x) + 'lt'] = master.topLeft[0]
+    sep_x[str(master.seq_x) + 'lb'] = master.botLeft[0]
+    sep_x[str(master.seq_x) + 'rt'] = master.topRight[0]
+    sep_x[str(master.seq_x) + 'rb'] = master.botRight[0]
+    for e in env_list:
+        sep_x[str(e.seq_x) + 'lt'] = e.topLeft[0]
+        sep_x[str(e.seq_x) + 'lb'] = e.botLeft[0]
+        sep_x[str(e.seq_x) + 'rt'] = e.topRight[0]
+        sep_x[str(e.seq_x) + 'rb'] = e.botRight[0]
+    sep_distance.append((sep_x[str(1) + 'lt']+sep_x[str(1)+'lb'])/2 - boundpoly.points[0][0])  # 到左边界的距离
+    sep_distance.append(boundpoly.points[1][0] - (sep_x[str(1 + len(env_list)) + 'rt']+sep_x[str(1 + len(env_list)) + 'rb'])/2)
+
+    # layer左右多出来的宽度
+    cond_lx = 0  # 导体层最左边的点的横坐标
+    cond_rx = 0  # 导体层最右边的点的横坐标
+    if master.seq_x == 1:
+        cond_lx = (master.botLeft[0] + master.topLeft[0]) / 2
+    else:
+        if master.seq_x == 1 + len(env_list):
+            cond_rx = (master.botRight[0] + master.topRight[0]) / 2
+    for e in env_list:
+        if e.seq_x == 1:
+            cond_lx = (e.botLeft[0] + e.topLeft[0]) / 2
+        else:
+            if e.seq_x == 1 + len(env_list):
+                cond_rx = (e.botRight[0] + e.topRight[0]) / 2
 
     '''对结果保留到小数点后三位'''
     # 返回结果
     info.master = master
     info.env_list = env_list
+    info.master_seq = master.seq_x
     info.master_width = round(master.width, 3)
+    info.master_thickness = round(master.height, 3)
+    info.env_num = len(env_list)
+    for e in env_list:
+        info.env_seq[e.name] = e.seq_x
+        info.env_width[e.name] = round(e.width, 3)
+        info.env_thickness[e.name] = round(e.height, 3)
+    for s in range(len(sep_distance)):
+        sep_distance[s] = round(sep_distance[s], 3)
+    info.cond_sep = sep_distance
+    info.bot_l_space = round(cond_lx - bot_list[0].points[0][0], 3)
+    info.bot_r_space = round(bot_list[1].points[1][0] - cond_rx, 3)
+    info.bot_divider = bot_list[0].points[1][0]
+    info.layer_thickness = round(bot_list[0].height, 3)
+    info.cond_to_cond = round(cond_layer_sep, 3)
+    info.cond_to_layer = round(cond_to_bottom, 3)
     info.boundary_width = round(boundpoly.width, 3)
+    info.boundary_height = round(boundpoly.height, 3)
+    for d in dielectric_list:
+        info.die_info[d.name] = []
+    for d in dielectric_list:       # 同一个die名称可能会有多个情况
+        infolist = [d.points[0][0], d.points[0][1], round(d.width, 3), round(d.height, 3), d.er]
+        info.die_info[d.name].append(infolist)
+    info.boundary_leftx = (-1)*boundpoly.points[0][0]
+    info.boundary_rightx = boundpoly.points[1][0]
     return info, TYPE
 
 
 def output_info(INFO_ALL, input_num, TYPE):
     # 打开文件以便写入
-    with open('output.txt', 'w') as f:
-        print('type'+str(TYPE), file=f)
-        if TYPE == 1:
-            print('w1\t\trightspace\tleftspace\tedgespace\tWb', file=f)
-            for i in range(input_num):
-                rightspace = 0
-                leftspace = 0
-                edgespace = 0
-                e_c2 = None
-                for e in INFO_ALL.env_listL[i]:
-                    if e.name == 'c2':
-                        e_c2 = e
-                        rightspace = round(abs(e.topLeft[0] - INFO_ALL.masterL[i].topRight[0] + e.botLeft[0] -
-                                          INFO_ALL.masterL[i].botRight[0]) / 2, 3)
-                    if e.name == 'c3':
-                        leftspace = round(abs(
-                            INFO_ALL.masterL[i].topLeft[0] - e.topRight[0] + INFO_ALL.masterL[i].botLeft[0] -
-                            e.botRight[0]) / 2, 3)
-                    if e.name == 'c2e':
-                        edgespace = round(abs(e.topLeft[0] - e_c2.topRight[0] + e.botLeft[0] - e_c2.botRight[0]) / 2, 3)
-                print('{:.3f}\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(INFO_ALL.master_widthL[i],
-                                                                                      rightspace,
-                                                                                      leftspace,
-                                                                                      edgespace,
-                                                                                      INFO_ALL.boundary_widthL[i]), file=f)
+    re_info = []
+
+    if TYPE == 1:
+        for i in range(input_num):
+            rightspace = 0
+            leftspace = 0
+            edgespace = 0
+            e_c2 = None
+            for e in INFO_ALL.env_listL[i]:
+                if e.name == 'c2':
+                    e_c2 = e
+                    rightspace = round(abs(e.topLeft[0] - INFO_ALL.masterL[i].topRight[0] + e.botLeft[0] -
+                                        INFO_ALL.masterL[i].botRight[0]) / 2, 3)
+                if e.name == 'c3':
+                    leftspace = round(abs(
+                        INFO_ALL.masterL[i].topLeft[0] - e.topRight[0] + INFO_ALL.masterL[i].botLeft[0] -
+                        e.botRight[0]) / 2, 3)
+                if e.name == 'c2e':
+                    edgespace = round(abs(e.topLeft[0] - e_c2.topRight[0] + e.botLeft[0] - e_c2.botRight[0]) / 2, 3)
+            temp_info = []
+            temp_info.append(INFO_ALL.master_widthL[i])
+            temp_info.append(rightspace)
+            temp_info.append(leftspace)
+            temp_info.append(edgespace)
+            temp_info.append(INFO_ALL.boundary_leftxL[i])
+            temp_info.append(INFO_ALL.boundary_rightxL[i])
+            re_info.append(temp_info)
+
+    if TYPE == 2 or TYPE == 3:
+        for i in range(input_num):
+            space = 0
+            digSpace = 0
+            edgespace = 0
+            for e in INFO_ALL.env_listL[i]:
+                if e.name == 'c2':
+                    space = round(abs(e.topLeft[0] - INFO_ALL.masterL[i].topRight[0] + e.botLeft[0] -
+                                      INFO_ALL.masterL[i].botRight[0]) / 2, 3)
+                if e.name == 'd2':
+                    digSpace = round(abs(e.topLeft[0] - INFO_ALL.masterL[i].topRight[0] + e.botLeft[0] -
+                                         INFO_ALL.masterL[i].botRight[0]) / 2, 3)
+                if e.name == 'c1Env':
+                    edgespace = round(abs(
+                        INFO_ALL.masterL[i].topLeft[0] - e.topRight[0] + INFO_ALL.masterL[i].botLeft[0] -
+                        e.botRight[0]) / 2, 3)
+            temp_info = []
+            temp_info.append(INFO_ALL.master_widthL[i])
+            temp_info.append(space)
+            temp_info.append(digSpace)
+            temp_info.append(edgespace)
+            temp_info.append(INFO_ALL.boundary_leftxL[i])
+            temp_info.append(INFO_ALL.boundary_rightxL[i])
+            re_info.append(temp_info)
+
+    return re_info
 
 
-        if TYPE == 2:
-            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb', file=f)
-            for i in range(input_num):
-                space = 0
-                digSpace = 0
-                edgespace = 0
-                for e in INFO_ALL.env_listL[i]:
-                    if e.name == 'c2':
-                        space = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
-                    if e.name == 'd2':
-                        digSpace = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
-                    if e.name == 'c1Env':
-                        edgespace = round(abs(INFO_ALL.masterL[i].topLeft[0]-e.topRight[0]+INFO_ALL.masterL[i].botLeft[0]-e.botRight[0])/2, 3)
-                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(INFO_ALL.master_widthL[i],
-                                                                                      space,
-                                                                                      digSpace,
-                                                                                      edgespace,
-                                                                                      INFO_ALL.boundary_widthL[i]), file=f)
-
-        if TYPE == 3:
-            print('mstwidth\tspace\tdigSpace\tedgespace\t\tWb', file=f)
-            for i in range(input_num):
-                space = 0
-                digSpace = 0
-                edgespace = 0
-                for e in INFO_ALL.env_listL[i]:
-                    if e.name == 'c2':
-                        space = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
-                    if e.name == 'd2':
-                        digSpace = round(abs(e.topLeft[0]-INFO_ALL.masterL[i].topRight[0]+e.botLeft[0]-INFO_ALL.masterL[i].botRight[0])/2, 3)
-                    if e.name == 'c1Env':
-                        edgespace = round(abs(INFO_ALL.masterL[i].topLeft[0]-e.topRight[0]+INFO_ALL.masterL[i].botLeft[0]-e.botRight[0])/2, 3)
-                print('{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}\t\t{:.3f}'.format(
-                    INFO_ALL.master_widthL[i],
-                    space,
-                    digSpace,
-                    edgespace,
-                    INFO_ALL.boundary_widthL[i],),file=f)
 
 
 def parser(type=0, Fpath=''):
@@ -324,7 +459,7 @@ def parser(type=0, Fpath=''):
         master, env_list, bot_list, dielectric_list, boundpoly = read_txt_file(Fpath)
         info, t = process_data(master, env_list, bot_list, dielectric_list, boundpoly)
         INFO_ALL.collect(info)
-        output_info(INFO_ALL, 1, t)
+        return output_info(INFO_ALL, 1, t)
     else:
         #读取所有文件
         if type == 1:
@@ -334,7 +469,7 @@ def parser(type=0, Fpath=''):
                 master, env_list, bot_list, dielectric_list, boundpoly = read_txt_file(file_path)
                 info, _ = process_data(master, env_list, bot_list, dielectric_list, boundpoly)
                 INFO_ALL.collect(info)
-            output_info(INFO_ALL, input_num, 1)
+            return output_info(INFO_ALL, input_num, 1)
         if type == 2:
             input_num = 48
             for i in range(0, input_num):
@@ -342,7 +477,7 @@ def parser(type=0, Fpath=''):
                 master, env_list, bot_list, dielectric_list, boundpoly = read_txt_file(file_path)
                 info, _ = process_data(master, env_list, bot_list, dielectric_list, boundpoly)
                 INFO_ALL.collect(info)
-            output_info(INFO_ALL, input_num, 2)
+            return output_info(INFO_ALL, input_num, 2)
         if type == 3:
             input_num = 32
             for i in range(0, input_num):
@@ -350,20 +485,15 @@ def parser(type=0, Fpath=''):
                 master, env_list, bot_list, dielectric_list, boundpoly = read_txt_file(file_path)
                 info, _ = process_data(master, env_list, bot_list, dielectric_list, boundpoly)
                 INFO_ALL.collect(info)
-            output_info(INFO_ALL, input_num, 3)
+            return output_info(INFO_ALL, input_num, 3)
 
 
-'''
-食用方法：调用parser()函数
-读取同一type所有文件：parser(type=1 or 2 or 3, Fpath= 【type_data文件夹路径，格式为字符串】)
-读取某一个文件：parser(type=0, Fpath=【文件路径，格式为字符串】)
-输出文件为output
-'''
-# 调用
+""" # 调用
 if __name__=="__main__":
     # 读入同一type所有文件
-    parser(type=1, Fpath='./data')
+    print(parser(type=1, Fpath='./data'))
     # 读入一个文件
     # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
     # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
     # parser(type=0, Fpath='../data/type3_data/BEM_INPUT_1_43924.txt')
+ """
