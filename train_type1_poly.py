@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
-import parser_work.parser_1 as parser_1
+from parser_work import parser_6_features
 
 # 评价标准
 def weighted_average_loss(outputs, labels):
@@ -36,7 +36,7 @@ labels_test = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt'
 
 # 获取输入数据
 
-inputs=np.array(parser_1.parser(type=1, Fpath='./data'),dtype=float)
+inputs=np.array(parser_6_features.parser(type=1, Fpath='./data'),dtype=float)
 inputs_train=inputs[0:60, :]
 inputs_test=inputs[60:, :]
 

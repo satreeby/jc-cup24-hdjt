@@ -3,12 +3,15 @@ class Master:
         self.name = name
         self.num = int(num)
         self.points = points
+
         self.seq_x = 0
+
         self.botLeft = []
         self.botRight = []
         self.topLeft = []
         self.topRight = []
         self.setBoundary()
+
         self.width = (self.botRight[0] - self.botLeft[0] + self.topRight[0] - self.topLeft[0]) / 2
         self.height = (self.topLeft[1] - self.botLeft[1] + self.topRight[1] - self.botRight[1]) / 2
 
@@ -25,6 +28,7 @@ class Master:
 
 class Bottom:
     def __init__(self, name, num, points):
+
         self.name = name
         self.num = int(num)
         self.points = points
@@ -37,12 +41,15 @@ class Env:
         self.name = name
         self.num = int(num)
         self.points = points
+
         self.seq_x = 0
+
         self.botLeft = []
         self.botRight = []
         self.topLeft = []
         self.topRight = []
         self.setBoundary()
+
         self.width = (self.botRight[0] - self.botLeft[0] + self.topRight[0] - self.topLeft[0]) / 2
         self.height = (self.topLeft[1] - self.botLeft[1] + self.topRight[1] - self.botRight[1]) / 2
 
@@ -63,11 +70,13 @@ class Dielectric:
         self.num = int(num)
         self.points = points
         self.er = er
+
         self.botLeft = []
         self.botRight = []
         self.topLeft = []
         self.topRight = []
         self.setBoundary()
+
         self.width = (self.botRight[0] - self.botLeft[0] + self.topRight[0] - self.topLeft[0]) / 2
         self.height = (self.topLeft[1] - self.botLeft[1] + self.topRight[1] - self.botRight[1]) / 2
 
@@ -92,9 +101,10 @@ class Boundary_Polygon:
 
 class Info_One_input:
     def __init__(self):
+
         self.xcoors = []
         self.boundary_leftx = 0
-        self.boundary_rightx = 0 
+        self.boundary_rightx = 0
 
 
 class Info_All:
@@ -177,18 +187,17 @@ def read_txt_file(file_path):
 
                 return master, env_list, bot_list, dielectric_list, boundpoly
             else:
-                print("error")
                 return None
     except FileNotFoundError:
-        print(f"file {file_path} not found")
         return None
     except Exception as e:
-        print(f"error: {str(e)}")
         return None
 
 
 def process_data(master, env_list, bot_list, dielectric_list, boundpoly):
+
     info = Info_One_input()
+
 
     TYPE = 1
     y_threshold = min([e.height for e in env_list])
@@ -240,7 +249,7 @@ def output_info(INFO_ALL, input_num, TYPE):
 
 
 def parser(type=0, Fpath=''):
-    assert type == 0 or type == 1 or type == 2 or type == 3, 'no this type!'
+    assert type == 0 or type == 1 or type == 2 or type == 3, 'no such type!'
 
     INFO_ALL = Info_All()
     if type == 0:
@@ -275,8 +284,11 @@ def parser(type=0, Fpath=''):
             return output_info(INFO_ALL, input_num, 3)
 
 
+
 if __name__=="__main__":
+
     print(parser(type=1, Fpath='./data'))
-    # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
-    # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
-    # parser(type=0, Fpath='../data/type3_data/BEM_INPUT_1_43924.txt')
+
+    # parser(type=0, Fpath='./data/type2_data/BEM_INPUT_1_43817.txt')
+    # parser(type=0, Fpath='./data/type1_data/BEM_INPUT_1_43652.txt')
+    # parser(type=0, Fpath='./data/type3_data/BEM_INPUT_1_43924.txt')

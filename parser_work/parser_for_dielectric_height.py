@@ -388,7 +388,7 @@ def output_info_t(info_all, input_num, TYPE):
 
 
 def parser():
-    Fpath = '../data'
+    Fpath = './data'
     info_all = Info_All()
 
     input_num = 64

@@ -571,7 +571,7 @@ def parser(type=0, Fpath=''):
 
 
 if __name__=="__main__":
-    parser(type=3, Fpath='../data')
-    # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
-    # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
-    # parser(type=0, Fpath='../data/type3_data/BEM_INPUT_1_43924.txt')
+    parser(type=3, Fpath='./data')
+    # parser(type=0, Fpath='./data/type2_data/BEM_INPUT_1_43817.txt')
+    # parser(type=0, Fpath='./data/type1_data/BEM_INPUT_1_43652.txt')
+    # parser(type=0, Fpath='./data/type3_data/BEM_INPUT_1_43924.txt')

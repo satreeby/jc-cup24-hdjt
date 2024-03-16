@@ -1,7 +1,3 @@
-'''
-output: [B, C], C=5, [w1, leftspace, rightspace, edgespace, Wb]
-'''
-
 class Master:
     def __init__(self, name, num, points):
         self.name = name
@@ -345,6 +341,6 @@ if __name__=="__main__":
 
     print(parser(type=3, Fpath='./data'))
 
-    # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
-    # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
-    # parser(type=0, Fpath='../data/type3_data/BEM_INPUT_1_43924.txt')
+    # parser(type=0, Fpath='./data/type2_data/BEM_INPUT_1_43817.txt')
+    # parser(type=0, Fpath='./data/type1_data/BEM_INPUT_1_43652.txt')
+    # parser(type=0, Fpath='./data/type3_data/BEM_INPUT_1_43924.txt')

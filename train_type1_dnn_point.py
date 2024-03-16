@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch.utils import data
 from model.type1 import CpMLP
-import parser_work.parser_2 as parser_2
+from parser_work import parser_for_condlayer
 
 # 评价标准
 def weighted_average_loss(outputs, labels):
@@ -42,7 +42,7 @@ labels_test = load_data('C:\project\python\HuadaJiutian\labels\labels_type1.txt'
 
 # 获取输入数据
 
-inputs=torch.tensor(parser_2.parser(type=1, Fpath='./data'),dtype=torch.float32)
+inputs=torch.tensor(parser_for_condlayer.parser(type=1, Fpath='./data'),dtype=torch.float32)
 inputs_train=inputs[0:50, :]
 inputs_test=inputs[50:, :]
 
