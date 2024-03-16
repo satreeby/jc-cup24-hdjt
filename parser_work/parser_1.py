@@ -363,11 +363,8 @@ def process_data(master, env_list, bot_list, dielectric_list, boundpoly):
             if e.seq_x == 1 + len(env_list):
                 cond_rx = (e.botRight[0] + e.topRight[0]) / 2
 
-<<<<<<< HEAD:parser_work/parser_1.py
     '''对结果保留到小数点后三位'''
     # 返回结果
-=======
->>>>>>> 452c94d6c324ec6626c5a6bc276dc97cbb2d9d9c:parser_work/parser_6_features.py
     info.master = master
     info.env_list = env_list
     info.master_seq = master.seq_x
@@ -400,10 +397,7 @@ def process_data(master, env_list, bot_list, dielectric_list, boundpoly):
 
 
 def output_info(INFO_ALL, input_num, TYPE):
-<<<<<<< HEAD:parser_work/parser_1.py
     # 打开文件以便写入
-=======
->>>>>>> 452c94d6c324ec6626c5a6bc276dc97cbb2d9d9c:parser_work/parser_6_features.py
     re_info = []
 
     if TYPE == 1:
@@ -499,20 +493,11 @@ def parser(type=0, Fpath=''):
             return output_info(INFO_ALL, input_num, 3)
 
 
-<<<<<<< HEAD:parser_work/parser_1.py
-""" # 调用
+# 调用
 if __name__=="__main__":
     # 读入同一type所有文件
     print(parser(type=1, Fpath='./data'))
     # 读入一个文件
-=======
-
-if __name__=="__main__":
-
-    print(parser(type=3, Fpath='../data'))
-
->>>>>>> 452c94d6c324ec6626c5a6bc276dc97cbb2d9d9c:parser_work/parser_6_features.py
     # parser(type=0, Fpath='../data/type2_data/BEM_INPUT_1_43817.txt')
     # parser(type=0, Fpath='../data/type1_data/BEM_INPUT_1_43652.txt')
     # parser(type=0, Fpath='../data/type3_data/BEM_INPUT_1_43924.txt')
- """
