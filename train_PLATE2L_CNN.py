@@ -147,10 +147,3 @@ print(f"Total Test Loss: {test_error.mean()}")
 file = open(".\\log\\pattern1_metal_attention_results.txt", "w+")
 file.write(f"predict\n {predict.detach().numpy()}\n Test Loss for every cap\n {aveloss.detach().numpy()}\n Test Loss\n {test_error.detach().numpy()}\n Average Test Loss\n {test_error.mean()}\n Train Loss\n {(train_error.detach().numpy())}")
 file.close()
-
-# 训练误差过程可视化
-# plt.plot(x, y)
-
-
-""" for name, param in model.named_parameters():
-    print(name, param.data) """
