@@ -5,7 +5,7 @@ import numpy as np
 def weighted_average_loss(outputs, labels):
     '''评价标准，加权平均误差, [batch_size, 1] 的矩阵'''
     weights=torch.abs(labels)/(torch.abs(labels).sum(dim=1, keepdim=True))
-    aveloss=torch.abs(outputs-labels)/ torch.max(torch.abs(labels), torch.tensor(0.00001))*weights
+    aveloss=torch.abs(outputs-labels)/ torch.max(torch.abs(labels), torch.tensor(0.0000001))*weights
     return aveloss.sum(dim=1)
 
 
