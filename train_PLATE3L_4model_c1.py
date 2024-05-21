@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from torch.utils import data
-from model.PLATE3L import CpMLP, CpTransformer
+from model.PLATE3L import CpMLP
 from parser_work import parser_4model_for2
 from utils import cap_utils
 torch.set_printoptions(threshold=np.inf)

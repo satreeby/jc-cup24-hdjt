@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 from torch.utils import data
 from model.PLATE2L import CpMLP
 from parser_work import parser_4model_for1
