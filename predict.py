@@ -7,9 +7,15 @@ from utils import parser_final
 import argparse
 import os
 
+if torch.cuda.is_available():
+    device = 'cuda:0'
+else:
+    device= 'cpu'
+
+
 def predict_PLATE2L(input, script_dir):
     model = model_PLATE2L.CpMLP(inchans=26, hidden1=4096, hidden2=1024, hidden3=512, hidden4=128, hidden5=128, outchans=3)
-    state_dict = torch.load(script_dir/'model/PLATE2L/saved/model_PLATE2L_CpMLP.pt')
+    state_dict = torch.load(script_dir/'model/PLATE2L/saved/model_PLATE2L_CpMLP.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)
@@ -17,7 +23,7 @@ def predict_PLATE2L(input, script_dir):
 
 def predict_STACK3L(input, script_dir):
     model = model_STACK3L.CpMLP(inchans=42, hidden1=4096, hidden2=1024, hidden3=1024, hidden4=128, hidden5=128, outchans=7)
-    state_dict = torch.load(script_dir/'model/STACK3L/saved/model_STACK3L_CpMLP.pt')
+    state_dict = torch.load(script_dir/'model/STACK3L/saved/model_STACK3L_CpMLP.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)
@@ -36,7 +42,7 @@ def predict_PLATE3L(input, script_dir, subtype):
 
 def predict_PLATE3L_c1(input, script_dir):
     model = model_PLATE3L.CpMLP(inchans=15, hidden1=2048, hidden2=1024, hidden3=1024, hidden4=512, hidden5=128, outchans=3)
-    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1.pt')
+    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)
@@ -44,7 +50,7 @@ def predict_PLATE3L_c1(input, script_dir):
 
 def predict_PLATE3L_c1c2(input, script_dir):
     model = model_PLATE3L.CpMLP(inchans=21, hidden1=2048, hidden2=1024, hidden3=512, hidden4=512, hidden5=128, outchans=4)
-    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1c2.pt')
+    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1c2.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)
@@ -52,7 +58,7 @@ def predict_PLATE3L_c1c2(input, script_dir):
 
 def predict_PLATE3L_c1lEnv(input, script_dir):
     model = model_PLATE3L.CpMLP(inchans=20, hidden1=3072, hidden2=1024, hidden3=512, hidden4=512, hidden5=256, outchans=3)
-    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1lEnv.pt')
+    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1lEnv.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)
@@ -60,7 +66,7 @@ def predict_PLATE3L_c1lEnv(input, script_dir):
 
 def predict_PLATE3L_c1c2lEnvrEnv(input, script_dir):
     model = model_PLATE3L.CpMLP(inchans=31, hidden1=3072, hidden2=1024, hidden3=1024, hidden4=512, hidden5=128, outchans=5)
-    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1c2lEnvrEnv.pt')
+    state_dict = torch.load(script_dir/'model/PLATE3L/saved/model_PLATE3L_c1c2lEnvrEnv.pt', map_location=torch.device(device))
     model.load_state_dict(state_dict)
     model.eval()
     output = model(input)

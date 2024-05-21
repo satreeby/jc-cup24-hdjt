@@ -257,29 +257,22 @@ def process_data(master, env_list, bot_dict, top_dict, dielectric_list, boundpol
                 dnames.append(d.name)
                 W_top = d.topRight[0]-d.topLeft[0]
                 W_bot = d.botRight[0]-d.botLeft[0]
-                info.damage_width.append(W_top)
-                info.damage_width.append(W_bot)
+                if abs(W_top - (info.boundary_rx-info.boundary_lx)) > 0.001:    # 有一个damage撑满了，这个不算
+                    info.damage_width.append(W_top)
+                if abs(W_bot - (info.boundary_rx-info.boundary_lx)) > 0.001:
+                    info.damage_width.append(W_bot)
     if T == 'PLATE2L':
         if 4-len(info.damage_width) > 0:
             for i in range(4-len(info.damage_width)):
                 info.damage_width.append(0.0)
-        elif 4-len(info.damage_width) < 0:
-            while len(info.damage_width)!=4:
-                info.damage_width.pop()
     if T == 'PLATE3L':
         if 6-len(info.damage_width) > 0:
             for i in range(6-len(info.damage_width)):
                 info.damage_width.append(0.0)
-        elif 6-len(info.damage_width) < 0:
-            while len(info.damage_width)!=6:
-                info.damage_width.pop()
     if T == 'STACK3L':
         if 8-len(info.damage_width) > 0:
             for i in range(8-len(info.damage_width)):
                 info.damage_width.append(0.0)
-        elif 8-len(info.damage_width) < 0:
-            while len(info.damage_width)!=8:
-                info.damage_width.pop()
     # 环境导体的处理需要分type
     if T == 'PLATE2L':
         WlEnv_top = 0
@@ -514,8 +507,10 @@ def process_data(master, env_list, bot_dict, top_dict, dielectric_list, boundpol
     info.metal_H = master.botLeft[1]-bot_dict['botleft'].points[3][1]
 
     if T == 'PLATE3L':
-        info.top_H = top_dict['topleft'].points[0][1]-bot_dict['botleft'].points[3][1]
-        info.metal_top = top_dict['topleft'].points[0][1]-master.topLeft[1]
+        if id%2==1:
+            info.metal_top = top_dict['topleft'].points[0][1]-master.topLeft[1]
+        else:
+            info.top_H = top_dict['topleft'].points[0][1]-bot_dict['botleft'].points[3][1]
     
     #导体层厚度
     info.cond_thickness = master.height
@@ -552,7 +547,7 @@ def output(info, id, T, model_T):
                 re_info.append(info.master_top_width)
                 re_info.append(info.master_bot_width)
                 re_info.append(info.metal_H)
-                re_info.append(info.top_H)
+                re_info.append(info.metal_top)
                 re_info.append(info.cond_thickness)
                 for dw in info.damage_width:
                     re_info.append(dw)
@@ -634,8 +629,8 @@ def output(info, id, T, model_T):
 def parser(single,      #是否单个输入
            file1='hi',       #文件1路径
            file2='hi',       #文件2路径
-           pre='hi',         #文件前缀
-           post='hi',        #文件后缀
+           pre='BEM_INPUT_',         #文件前缀
+           post='.txt',        #文件后缀
            input_num='hi',   #文件数量
            directory='hi'    #目录路径
            ):
@@ -722,12 +717,12 @@ def parser(single,      #是否单个输入
     else:
         #读入目录下的一组文件
         #先判断pattern
-        file_path = directory+'/'+pre+'1'+post
+        file_path = directory+'/'+pre+'1'+post+'.txt'
         _, _, _, _, _, _, pattern = read_txt_file(file_path)
         if pattern == 'PLATE2L':
             feature_matrix = []
             for i in range(0, input_num):
-                file_path = directory+'/'+pre+str(i+1)+post
+                file_path = directory+'/'+pre+str(i+1)+post+'.txt'
                 #read
                 master, env_list, bot_dict, top_dict, dielectric_list, boundpoly, pattern_cur = read_txt_file(file_path)
                 assert pattern_cur == pattern, 'find file pattern differs in this directory!'
@@ -743,8 +738,8 @@ def parser(single,      #是否单个输入
             for i in range(0, sampling_num):
                 f1 = 2*i+1
                 f2 = 2*i+2
-                file1_path = directory+'/'+pre+str(f1)+post
-                file2_path = directory+'/'+pre+str(f2)+post
+                file1_path = directory+'/'+pre+str(f1)+post+'.txt'
+                file2_path = directory+'/'+pre+str(f2)+post+'.txt'
                 #read
                 master1, env_list1, bot_dict1, top_dict1, dielectric_list1, boundpoly1, pattern1 = read_txt_file(file1_path)
                 master2, env_list2, bot_dict2, top_dict2, dielectric_list2, boundpoly2, pattern2 = read_txt_file(file2_path)
@@ -779,8 +774,8 @@ def parser(single,      #是否单个输入
             for i in range(0, sampling_num):
                 f1 = 2*i+1
                 f2 = 2*i+2
-                file1_path = directory+'/'+pre+str(f1)+post
-                file2_path = directory+'/'+pre+str(f2)+post
+                file1_path = directory+'/'+pre+str(f1)+post+'.txt'
+                file2_path = directory+'/'+pre+str(f2)+post+'.txt'
                 #read
                 master1, env_list1, bot_dict1, top_dict1, dielectric_list1, boundpoly1, pattern1 = read_txt_file(file1_path)
                 master2, env_list2, bot_dict2, top_dict2, dielectric_list2, boundpoly2, pattern2 = read_txt_file(file2_path)
@@ -808,15 +803,12 @@ if __name__ == '__main__':
                                file1='/home/huadacup/HuadaJiutian/Cases/STACK3L/SUB-metal2-metal3_STACK3L/input/BEM_INPUT_1_126367.txt',
                                file2='/home/huadacup/HuadaJiutian/Cases/STACK3L/SUB-metal2-metal3_STACK3L/input/BEM_INPUT_2_126367.txt',
                                pre='BEM_INPUT_',
-                               post='_133293.txt',
+                               post='_133293',
                                input_num=648,
                                directory='/home/huadacup/HuadaJiutian/Cases/PLATE3L/SUB-metal1-metal2_PLATE3L/input'
     )
     end = time.time()
     print(end-start)
     print(pattern)
-    print(len(feature_matrix[0][0]))
-    print(len(feature_matrix[1][0]))
-    print(len(feature_matrix[2][0]))
-    print(len(feature_matrix[3][0]))
+    print(feature_matrix)
 
