@@ -12,4 +12,4 @@ Although we only received the second prize in the Shanghai regional competition,
 Feel free to explore the code and documentation in this repository. If you have any questions or suggestions, please don't hesitate to reach out.
 
 ## Acknowledgments
-Special thanks to our mentor [@Prof. Zhaori Bi](https://bzr2915.github.io/bzr2915/) and the organizers of the competition for providing this valuable learning opportunity.
+Special thanks to [@Prof. Zhaori Bi](https://bzr2915.github.io/bzr2915/) and the organizers of the competition for providing this valuable learning opportunity.
