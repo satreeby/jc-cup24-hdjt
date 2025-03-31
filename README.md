@@ -1,6 +1,6 @@
 # Parametric Structure Capacitance Extraction Based on Machine Learning
 
-This is a project I collaborated on with my teammates [@MO MO](https://github.com/mooooobi) and [@Jiaheng Tang](https://github.com/098654321) for the 8th China College IC Competition - HuaDaJiuTian Cup in 2024. The project focuses on parametric structure capacitance extraction using machine learning techniques.
+This is a project I collaborated on with my teammates [@Mo Mo](https://github.com/mooooobi) and [@Jiaheng Tang](https://github.com/098654321) for the 8th China College IC Competition - HuaDaJiuTian Cup in 2024. The project focuses on parametric structure capacitance extraction using machine learning techniques.
 
 ## Project Overview
 We designed a neural network that is both highly generalizable and relatively lightweight, based on the geometric and physical characteristics of capacitance. Despite there being several areas for improvement, such as the adoption of NAS (Neural Architecture Search), this project serves as a standard example of utilizing deep learning to solve practical problems.
